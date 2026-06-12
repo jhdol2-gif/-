@@ -1,0 +1,35 @@
+index.html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Dream Farm</title>
+<style>
+body{
+background:#e8f5e9;
+font-family:sans-serif;
+text-align:center;
+padding-top:100px;
+}
+button{
+padding:15px;
+font-size:20px;
+}
+</style>
+</head>
+<body>
+
+<h1>🌱 Dream Farm 🌱</h1>
+
+<h2>포천야채청년</h2>
+
+<p>GitHub Pages 연결 성공!</p>
+
+<p>💰 골드 : 100</p>
+
+<button onclick="alert('첫 수확을 축하합니다!')">
+🌾 수확하기
+</button>
+
+</body>
+</html>
