@@ -324,3 +324,73 @@ changeWeather();
 
 </body>
 </html>
+const GAME_VERSION = "0.8.2";
+function loadGame(){
+  const save = localStorage.getItem("dreamfarm");
+
+  if(!save){
+    return;
+  }
+
+  try{
+    const data = JSON.parse(save);
+
+    // 🔥 버전 다르면 초기화
+    if(data.version !== GAME_VERSION){
+      localStorage.removeItem("dreamfarm");
+      return;
+    }
+
+    gold = data.gold ?? 50;
+    level = data.level ?? 1;
+    exp = data.exp ?? 0;
+    maxExp = data.maxExp ?? 100;
+
+    seed = data.seed ?? seed;
+    inventory = data.inventory ?? inventory;
+    farm = data.farm ?? farm;
+
+  } catch(e){
+    console.log("저장 데이터 깨짐 → 초기화");
+    localStorage.removeItem("dreamfarm");
+  }
+}function saveGame(){
+  const data = {
+    version: GAME_VERSION,
+    gold,
+    level,
+    exp,
+    maxExp,
+    seed,
+    inventory,
+    farm
+  };
+
+  localStorage.setItem("dreamfarm", JSON.stringify(data));
+}<button onclick="resetGame()">🧹 게임 초기화</button>function resetGame(){
+  if(!confirm("진짜 초기화할까요? 모든 데이터 삭제됨")) return;
+
+  localStorage.removeItem("dreamfarm");
+
+  gold = 50;
+  level = 1;
+  exp = 0;
+  maxExp = 100;
+
+  seed = {
+    lettuce:0, chive:0, carrot:0,
+    tomato:0, corn:0, potato:0
+  };
+
+  inventory = {
+    lettuce:0, chive:0, carrot:0,
+    tomato:0, corn:0, potato:0
+  };
+
+  farm = Array(9).fill(null);
+
+  renderFarm();
+  update();
+
+  alert("초기화 완료!");
+}
