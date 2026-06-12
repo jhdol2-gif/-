@@ -1,313 +1,142 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
-
-<meta charset="UTF-8">
-
-<title>Dream Farm</title>
-
-<style>
-
-body{
-background:#dff5d8;
-font-family:sans-serif;
-text-align:center;
-}
-
-.box{
-background:white;
-margin:15px;
-padding:15px;
-border-radius:15px;
-}
-
-button{
-padding:10px;
-margin:5px;
-font-size:16px;
-}
-
-.land{
-display:inline-block;
-width:80px;
-height:80px;
-border:2px solid green;
-margin:5px;
-line-height:80px;
-cursor:pointer;
-background:#b57f50;
-color:white;
-}
-
-</style>
-
+  <meta charset="UTF-8">
+  <title>DreamFarm v0.2</title>
+  <style>
+    body { font-family: Arial; background:#f2f7f2; text-align:center; }
+    .box { background:white; padding:15px; margin:10px auto; width:360px; border-radius:10px; }
+    .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; }
+    .plot {
+      background:#dfeedd;
+      height:80px;
+      border-radius:8px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      font-size:14px;
+    }
+    button { padding:6px; margin:3px; cursor:pointer; }
+  </style>
 </head>
-
 <body>
 
-<h1>🌱 Dream Farm 🌱</h1>
+<h1>🌱 DreamFarm v0.2</h1>
 
 <div class="box">
-
-<h2 id="gold"></h2>
-
-<button onclick="attendance()">
-
-📅 출석하기
-
-</button>
-
-<p id="day"></p>
-
+  💰 골드: <span id="gold">0</span>
 </div>
 
 <div class="box">
-
-<h2>🏪 씨앗 상점</h2>
-
-<button onclick="buySeed()">
-
-상추 씨앗 10G
-
-</button>
-
-<p id="seed"></p>
-
+  🌱 선택 작물:
+  <select id="crop">
+    <option value="lettuce">상추 (5초)</option>
+    <option value="chive">부추 (8초)</option>
+  </select>
+  <button onclick="plantAll()">전체 심기</button>
 </div>
 
 <div class="box">
-
-<h2>🌾 농장</h2>
-
-<div id="farm"></div>
-
+  <div class="grid" id="farm"></div>
 </div>
 
 <div class="box">
-
-<h2>📦 창고</h2>
-
-<p id="bag"></p>
-
+  📦 창고<br>
+  상추: <span id="lCount">0</span> |
+  부추: <span id="cCount">0</span><br>
+  <button onclick="sell()">전체 판매</button>
 </div>
 
 <script>
+let gold = 50;
 
-let gold=
-Number(localStorage.getItem("gold"))||100;
+let crops = {
+  lettuce: { time: 5000, count: 0, price: 5 },
+  chive: { time: 8000, count: 0, price: 8 }
+};
 
-let seed=
-Number(localStorage.getItem("seed"))||0;
+// 9개 땅
+let farm = Array(9).fill(null);
 
-let lettuce=
-Number(localStorage.getItem("lettuce"))||0;
+function renderFarm() {
+  const farmDiv = document.getElementById("farm");
+  farmDiv.innerHTML = "";
 
-let day=
-Number(localStorage.getItem("day"))||1;
+  farm.forEach((plot, i) => {
+    const div = document.createElement("div");
+    div.className = "plot";
 
-let last=
-localStorage.getItem("last")||"";
+    if (!plot) {
+      div.innerText = "빈 땅";
+      div.onclick = () => plant(i);
+    } else if (plot.stage === "growing") {
+      div.innerText = "🌱 성장중";
+    } else {
+      div.innerText = "🌾 수확 가능";
+      div.onclick = () => harvest(i);
+    }
 
-let farm=
-JSON.parse(
-localStorage.getItem("farm")
-)||
-
-[
-0,0,0,0,0
-];
-
-function save(){
-
-localStorage.setItem(
-"gold",
-gold
-);
-
-localStorage.setItem(
-"seed",
-seed
-);
-
-localStorage.setItem(
-"lettuce",
-lettuce
-);
-
-localStorage.setItem(
-"day",
-day
-);
-
-localStorage.setItem(
-"last",
-last
-);
-
-localStorage.setItem(
-"farm",
-JSON.stringify(farm)
-);
-
-draw();
-
+    farmDiv.appendChild(div);
+  });
 }
 
-function draw(){
-
-document.getElementById(
-"gold"
-).innerHTML=
-"💰 골드 : "+
-gold+"G";
-
-document.getElementById(
-"seed"
-).innerHTML=
-"상추 씨앗 : "+
-seed;
-
-document.getElementById(
-"bag"
-).innerHTML=
-"상추 : "+
-lettuce;
-
-document.getElementById(
-"day"
-).innerHTML=
-day+
-"일차 출석";
-
-let html="";
-
-for(let i=0;i<5;i++){
-
-if(farm[i]==0){
-
-html+=
-"<div class='land' onclick='plant("+i+")'>빈땅</div>";
-
+function plantAll() {
+  for (let i = 0; i < farm.length; i++) {
+    if (!farm[i]) plant(i);
+  }
 }
 
-else{
+function plant(i) {
+  if (farm[i]) return;
 
-html+=
-"<div class='land'>🌱</div>";
+  let type = document.getElementById("crop").value;
 
+  farm[i] = {
+    type: type,
+    stage: "growing"
+  };
+
+  renderFarm();
+
+  setTimeout(() => {
+    if (farm[i]) farm[i].stage = "ready";
+    renderFarm();
+  }, crops[type].time);
 }
 
+function harvest(i) {
+  if (!farm[i] || farm[i].stage !== "ready") return;
+
+  let type = farm[i].type;
+  crops[type].count += 1;
+
+  farm[i] = null;
+  update();
+  renderFarm();
 }
 
-document.getElementById(
-"farm"
-).innerHTML=
-html;
+function sell() {
+  let total = 0;
 
+  for (let key in crops) {
+    total += crops[key].count * crops[key].price;
+    crops[key].count = 0;
+  }
+
+  gold += total;
+  update();
 }
 
-function attendance(){
-
-let today=
-new Date().toDateString();
-
-if(today==last){
-
-alert(
-"오늘은 이미 출석!"
-);
-
-return;
-
+function update() {
+  document.getElementById("gold").innerText = gold;
+  document.getElementById("lCount").innerText = crops.lettuce.count;
+  document.getElementById("cCount").innerText = crops.chive.count;
 }
 
-gold+=day*10;
-
-last=today;
-
-day++;
-
-if(day>7){
-
-day=1;
-
-}
-
-save();
-
-}
-
-function buySeed(){
-
-if(gold<10){
-
-alert(
-"골드 부족!"
-);
-
-return;
-
-}
-
-gold-=10;
-
-seed++;
-
-save();
-
-}
-
-function plant(i){
-
-if(farm[i]==1){
-
-return;
-
-}
-
-if(seed<=0){
-
-alert(
-"씨앗이 없습니다!"
-);
-
-return;
-
-}
-
-seed--;
-
-farm[i]=1;
-
-save();
-
-setTimeout(
-
-function(){
-
-farm[i]=0;
-
-lettuce++;
-
-alert(
-"🥬 상추 수확!"
-);
-
-save();
-
-},
-
-5000
-
-);
-
-}
-
-draw();
-
+renderFarm();
+update();
 </script>
 
 </body>
-
 </html>
