@@ -95,12 +95,12 @@ let weatherRate = 1;
 
 // 🌱 작물 데이터
 const crops = {
-  lettuce:{time:5000, price:5, seed:10, count:0},
-  chive:{time:8000, price:8, seed:15, count:0},
-  carrot:{time:10000, price:12, seed:20, count:0},
-  tomato:{time:12000, price:15, seed:25, count:0},
-  corn:{time:15000, price:20, seed:35, count:0},
-  potato:{time:18000, price:25, seed:40, count:0}
+  lettuce:{time:5000, price:20, seed:10, count:0},
+  chive:{time:20000, price:30, seed:15, count:0},
+  carrot:{time:50000, price:40, seed:20, count:0},
+  tomato:{time:95900, price:50, seed:25, count:0},
+  corn:{time:300000, price:60, seed:30, count:0},
+  potato:{time:1000000, price:70, seed:35, count:0}
 };
 
 let farm = Array(9).fill(null);
@@ -280,7 +280,7 @@ function randomEvent(){
   update();
 }
 
-setInterval(randomEvent, 20000);
+setInterval(changeWeather, 1800000); // 30분 = 1800초 = 1800000ms
 
 // 초기 실행
 renderFarm();
