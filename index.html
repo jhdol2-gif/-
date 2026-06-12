@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Dream Farm</title>
+
+<style>
+body{
+background:#dff5d8;
+font-family:Arial;
+text-align:center;
+padding:50px;
+}
+
+button{
+padding:15px;
+font-size:20px;
+border-radius:10px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>🌱 Dream Farm 🌱</h1>
+
+<h2>포천야채청년</h2>
+
+<p>GitHub Pages 연결 성공!</p>
+
+<p id="gold">💰 골드 : 100G</p>
+
+<button onclick="harvest()">
+🌾 첫 수확
+</button>
+
+<script>
+
+let gold=100;
+
+function harvest(){
+
+gold+=10;
+
+document.getElementById("gold").innerHTML=
+"💰 골드 : "+gold+"G";
+
+}
+
+</script>
+
+</body>
+
+</html>
