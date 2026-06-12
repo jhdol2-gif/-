@@ -2,21 +2,36 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Dream Farm</title>
+<title>🌱 Dream Farm</title>
 
 <style>
+
 body{
-background:#dff5d8;
-font-family:Arial;
-text-align:center;
-padding:50px;
+    background:#dff5d8;
+    font-family:Arial,sans-serif;
+    text-align:center;
+    padding:30px;
+}
+
+h1{
+    color:green;
+}
+
+.box{
+    background:white;
+    padding:20px;
+    margin:20px auto;
+    max-width:500px;
+    border-radius:15px;
 }
 
 button{
-padding:15px;
-font-size:20px;
-border-radius:10px;
+    padding:10px 20px;
+    margin:5px;
+    font-size:16px;
+    cursor:pointer;
 }
+
 </style>
 
 </head>
@@ -25,31 +40,196 @@ border-radius:10px;
 
 <h1>🌱 Dream Farm 🌱</h1>
 
-<h2>포천야채청년</h2>
+<div class="box">
 
-<p>GitHub Pages 연결 성공!</p>
+<h2>💰 골드</h2>
 
-<p id="gold">💰 골드 : 100G</p>
+<h3 id="gold">100G</h3>
 
-<button onclick="harvest()">
-🌾 첫 수확
+<button onclick="attendance()">
+📅 출석하기
 </button>
+
+<p id="attendanceText">
+1일차 보상 : 10G
+</p>
+
+</div>
+
+<div class="box">
+
+<h2>🏪 씨앗 상점</h2>
+
+<button onclick="buy(10,'상추')">
+상추 10G
+</button>
+
+<button onclick="buy(20,'쑥갓')">
+쑥갓 20G
+</button>
+
+<button onclick="buy(25,'부추')">
+부추 25G
+</button>
+
+<button onclick="buy(30,'열무')">
+열무 30G
+</button>
+
+<button onclick="buy(35,'얼갈이')">
+얼갈이 35G
+</button>
+
+</div>
+
+<div class="box">
+
+<h2>📦 창고</h2>
+
+<p id="bag"></p>
+
+</div>
 
 <script>
 
-let gold=100;
+let gold=
+Number(localStorage.getItem("gold"))||100;
 
-function harvest(){
+let day=
+Number(localStorage.getItem("day"))||1;
 
-gold+=10;
+let last=
+localStorage.getItem("last")||"";
 
-document.getElementById("gold").innerHTML=
-"💰 골드 : "+gold+"G";
+let bag=
+JSON.parse(
+localStorage.getItem("bag")
+)||{
+
+상추:0,
+쑥갓:0,
+부추:0,
+열무:0,
+얼갈이:0
+
+};
+
+function save(){
+
+localStorage.setItem(
+"gold",
+gold
+);
+
+localStorage.setItem(
+"day",
+day
+);
+
+localStorage.setItem(
+"last",
+last
+);
+
+localStorage.setItem(
+"bag",
+JSON.stringify(bag)
+);
+
+draw();
 
 }
+
+function draw(){
+
+document.getElementById(
+"gold"
+).innerHTML=
+gold+"G";
+
+document.getElementById(
+"attendanceText"
+).innerHTML=
+
+day+
+"일차 보상 : "+
+(day*10)+
+"G";
+
+document.getElementById(
+"bag"
+).innerHTML=
+
+"상추 : "+bag.상추+"<br>"+
+"쑥갓 : "+bag.쑥갓+"<br>"+
+"부추 : "+bag.부추+"<br>"+
+"열무 : "+bag.열무+"<br>"+
+"얼갈이 : "+bag.얼갈이;
+
+}
+
+function attendance(){
+
+let today=
+new Date().toDateString();
+
+if(today==last){
+
+alert(
+"오늘은 이미 출석했습니다!"
+);
+
+return;
+
+}
+
+let reward=
+day*10;
+
+gold+=reward;
+
+last=today;
+
+alert(
+reward+
+"G 획득!"
+);
+
+day++;
+
+if(day>7){
+
+day=1;
+
+}
+
+save();
+
+}
+
+function buy(price,name){
+
+if(gold<price){
+
+alert(
+"골드가 부족합니다!"
+);
+
+return;
+
+}
+
+gold-=price;
+
+bag[name]++;
+
+save();
+
+}
+
+draw();
 
 </script>
 
 </body>
-
 </html>
