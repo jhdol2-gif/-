@@ -1,35 +1,43 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
+
 <meta charset="UTF-8">
-<title>🌱 Dream Farm</title>
+
+<title>Dream Farm</title>
 
 <style>
 
 body{
-    background:#dff5d8;
-    font-family:Arial,sans-serif;
-    text-align:center;
-    padding:30px;
-}
-
-h1{
-    color:green;
+background:#dff5d8;
+font-family:sans-serif;
+text-align:center;
 }
 
 .box{
-    background:white;
-    padding:20px;
-    margin:20px auto;
-    max-width:500px;
-    border-radius:15px;
+background:white;
+margin:15px;
+padding:15px;
+border-radius:15px;
 }
 
 button{
-    padding:10px 20px;
-    margin:5px;
-    font-size:16px;
-    cursor:pointer;
+padding:10px;
+margin:5px;
+font-size:16px;
+}
+
+.land{
+display:inline-block;
+width:80px;
+height:80px;
+border:2px solid green;
+margin:5px;
+line-height:80px;
+cursor:pointer;
+background:#b57f50;
+color:white;
 }
 
 </style>
@@ -42,17 +50,15 @@ button{
 
 <div class="box">
 
-<h2>💰 골드</h2>
-
-<h3 id="gold">100G</h3>
+<h2 id="gold"></h2>
 
 <button onclick="attendance()">
+
 📅 출석하기
+
 </button>
 
-<p id="attendanceText">
-1일차 보상 : 10G
-</p>
+<p id="day"></p>
 
 </div>
 
@@ -60,25 +66,21 @@ button{
 
 <h2>🏪 씨앗 상점</h2>
 
-<button onclick="buy(10,'상추')">
-상추 10G
+<button onclick="buySeed()">
+
+상추 씨앗 10G
+
 </button>
 
-<button onclick="buy(20,'쑥갓')">
-쑥갓 20G
-</button>
+<p id="seed"></p>
 
-<button onclick="buy(25,'부추')">
-부추 25G
-</button>
+</div>
 
-<button onclick="buy(30,'열무')">
-열무 30G
-</button>
+<div class="box">
 
-<button onclick="buy(35,'얼갈이')">
-얼갈이 35G
-</button>
+<h2>🌾 농장</h2>
+
+<div id="farm"></div>
 
 </div>
 
@@ -95,30 +97,42 @@ button{
 let gold=
 Number(localStorage.getItem("gold"))||100;
 
+let seed=
+Number(localStorage.getItem("seed"))||0;
+
+let lettuce=
+Number(localStorage.getItem("lettuce"))||0;
+
 let day=
 Number(localStorage.getItem("day"))||1;
 
 let last=
 localStorage.getItem("last")||"";
 
-let bag=
+let farm=
 JSON.parse(
-localStorage.getItem("bag")
-)||{
+localStorage.getItem("farm")
+)||
 
-상추:0,
-쑥갓:0,
-부추:0,
-열무:0,
-얼갈이:0
-
-};
+[
+0,0,0,0,0
+];
 
 function save(){
 
 localStorage.setItem(
 "gold",
 gold
+);
+
+localStorage.setItem(
+"seed",
+seed
+);
+
+localStorage.setItem(
+"lettuce",
+lettuce
 );
 
 localStorage.setItem(
@@ -132,8 +146,8 @@ last
 );
 
 localStorage.setItem(
-"bag",
-JSON.stringify(bag)
+"farm",
+JSON.stringify(farm)
 );
 
 draw();
@@ -145,26 +159,51 @@ function draw(){
 document.getElementById(
 "gold"
 ).innerHTML=
+"💰 골드 : "+
 gold+"G";
 
 document.getElementById(
-"attendanceText"
+"seed"
 ).innerHTML=
-
-day+
-"일차 보상 : "+
-(day*10)+
-"G";
+"상추 씨앗 : "+
+seed;
 
 document.getElementById(
 "bag"
 ).innerHTML=
+"상추 : "+
+lettuce;
 
-"상추 : "+bag.상추+"<br>"+
-"쑥갓 : "+bag.쑥갓+"<br>"+
-"부추 : "+bag.부추+"<br>"+
-"열무 : "+bag.열무+"<br>"+
-"얼갈이 : "+bag.얼갈이;
+document.getElementById(
+"day"
+).innerHTML=
+day+
+"일차 출석";
+
+let html="";
+
+for(let i=0;i<5;i++){
+
+if(farm[i]==0){
+
+html+=
+"<div class='land' onclick='plant("+i+")'>빈땅</div>";
+
+}
+
+else{
+
+html+=
+"<div class='land'>🌱</div>";
+
+}
+
+}
+
+document.getElementById(
+"farm"
+).innerHTML=
+html;
 
 }
 
@@ -176,24 +215,16 @@ new Date().toDateString();
 if(today==last){
 
 alert(
-"오늘은 이미 출석했습니다!"
+"오늘은 이미 출석!"
 );
 
 return;
 
 }
 
-let reward=
-day*10;
-
-gold+=reward;
+gold+=day*10;
 
 last=today;
-
-alert(
-reward+
-"G 획득!"
-);
 
 day++;
 
@@ -207,23 +238,69 @@ save();
 
 }
 
-function buy(price,name){
+function buySeed(){
 
-if(gold<price){
+if(gold<10){
 
 alert(
-"골드가 부족합니다!"
+"골드 부족!"
 );
 
 return;
 
 }
 
-gold-=price;
+gold-=10;
 
-bag[name]++;
+seed++;
 
 save();
+
+}
+
+function plant(i){
+
+if(farm[i]==1){
+
+return;
+
+}
+
+if(seed<=0){
+
+alert(
+"씨앗이 없습니다!"
+);
+
+return;
+
+}
+
+seed--;
+
+farm[i]=1;
+
+save();
+
+setTimeout(
+
+function(){
+
+farm[i]=0;
+
+lettuce++;
+
+alert(
+"🥬 상추 수확!"
+);
+
+save();
+
+},
+
+5000
+
+);
 
 }
 
@@ -232,4 +309,5 @@ draw();
 </script>
 
 </body>
+
 </html>
