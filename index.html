@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>DreamFarm v0.2</title>
+  <title>DreamFarm v0.4</title>
   <style>
     body { font-family: Arial; background:#f2f7f2; text-align:center; }
     .box { background:white; padding:15px; margin:10px auto; width:360px; border-radius:10px; }
@@ -15,24 +15,29 @@
       align-items:center;
       justify-content:center;
       cursor:pointer;
-      font-size:14px;
+      font-size:13px;
+      user-select:none;
+    }
+    .ready {
+      background:#ffeaa7;
+      font-weight:bold;
     }
     button { padding:6px; margin:3px; cursor:pointer; }
   </style>
 </head>
 <body>
 
-<h1>🌱 DreamFarm v0.2</h1>
+<h1>🌱 DreamFarm v0.4</h1>
 
 <div class="box">
   💰 골드: <span id="gold">0</span>
 </div>
 
 <div class="box">
-  🌱 선택 작물:
+  🌱 작물 선택:
   <select id="crop">
-    <option value="lettuce">상추 (5초)</option>
-    <option value="chive">부추 (8초)</option>
+    <option value="lettuce">상추 (5초 / 5G)</option>
+    <option value="chive">부추 (8초 / 8G)</option>
   </select>
   <button onclick="plantAll()">전체 심기</button>
 </div>
@@ -51,12 +56,11 @@
 <script>
 let gold = 50;
 
-let crops = {
-  lettuce: { time: 5000, count: 0, price: 5 },
-  chive: { time: 8000, count: 0, price: 8 }
+const crops = {
+  lettuce: { time: 5000, price: 5, count: 0 },
+  chive:   { time: 8000, price: 8, count: 0 }
 };
 
-// 9개 땅
 let farm = Array(9).fill(null);
 
 function renderFarm() {
@@ -70,10 +74,16 @@ function renderFarm() {
     if (!plot) {
       div.innerText = "빈 땅";
       div.onclick = () => plant(i);
-    } else if (plot.stage === "growing") {
-      div.innerText = "🌱 성장중";
-    } else {
-      div.innerText = "🌾 수확 가능";
+    } 
+    else if (plot.stage === "growing") {
+      div.innerText = "🌱 성장중...";
+      div.onclick = null;
+    } 
+    else if (plot.stage === "ready") {
+      div.innerText = "🌾 클릭해서 수확!";
+      div.classList.add("ready");
+
+      // 👇 여기 핵심: 클릭해야만 수확
       div.onclick = () => harvest(i);
     }
 
@@ -90,7 +100,7 @@ function plantAll() {
 function plant(i) {
   if (farm[i]) return;
 
-  let type = document.getElementById("crop").value;
+  const type = document.getElementById("crop").value;
 
   farm[i] = {
     type: type,
@@ -100,18 +110,21 @@ function plant(i) {
   renderFarm();
 
   setTimeout(() => {
-    if (farm[i]) farm[i].stage = "ready";
-    renderFarm();
+    if (farm[i]) {
+      farm[i].stage = "ready";
+      renderFarm();
+    }
   }, crops[type].time);
 }
 
 function harvest(i) {
   if (!farm[i] || farm[i].stage !== "ready") return;
 
-  let type = farm[i].type;
+  const type = farm[i].type;
   crops[type].count += 1;
 
   farm[i] = null;
+
   update();
   renderFarm();
 }
