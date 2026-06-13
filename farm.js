@@ -47,7 +47,8 @@ function openPlantMenu(index) {
   state.farm[index] = {
     name: seed,
     ready: false,
-    growTime: state.seeds[seed].grow
+    growTime: state.seeds[seed].grow,
+    pest: false
   };
 
   renderAll();
@@ -57,21 +58,34 @@ function plantAll() {
   for (let i = 0; i < state.farm.length; i++) {
     if (!state.farm[i]) {
       const seed = "상추";
+
       if (state.gold >= state.seeds[seed].price) {
         state.gold -= state.seeds[seed].price;
+
         state.farm[i] = {
           name: seed,
           ready: false,
-          growTime: state.seeds[seed].grow
+          growTime: state.seeds[seed].grow,
+          pest: false
         };
       }
     }
   }
+
   renderAll();
 }
 
 function harvest(index) {
   const crop = state.farm[index];
+  if (!crop) return;
+
+  if (crop.pest) {
+    alert("🐛 해충 피해! 폐기됨");
+    state.farm[index] = null;
+    renderAll();
+    return;
+  }
+
   if (!crop.ready) return;
 
   state.storage[crop.name]++;
