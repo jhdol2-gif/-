@@ -51,13 +51,22 @@ button { padding:6px; margin:3px; cursor:pointer; }
 </div>
 
 <div class="box">
-<button onclick="resetGame()">🧹 초기화</button>
+<h3>📜 퀘스트</h3>
+<div id="quest"></div>
+<button onclick="newQuest()">새 퀘스트</button>
 </div>
 
 <div class="box">
 <h3>🏪 상점</h3>
 <select id="shop"></select>
 <button onclick="buySeed()">구매</button>
+</div>
+
+<div class="box">
+<h3>🧘 무사수행</h3>
+<p id="eventText">-</p>
+<div id="choices"></div>
+<button onclick="startEvent()">수행 시작</button>
 </div>
 
 <div class="box">
@@ -86,6 +95,16 @@ let seed = { lettuce: 5 };
 let inventory = { lettuce: 0 };
 let farm = Array(9).fill(null);
 
+// =====================
+// 📜 퀘스트
+// =====================
+let quest = null;
+
+// =====================
+// 🧘 이벤트
+// =====================
+let currentEvent = null;
+  
 // =====================
 // 🌾 작물
 // =====================
@@ -117,14 +136,95 @@ function load(){
   exp = d.exp ?? exp;
   maxExp = d.maxExp ?? maxExp;
   farmerLv = d.farmerLv ?? farmerLv;
-
+  quest = d.quest ?? null;
+ }
+  
   seed = d.seed ?? seed;
   inventory = d.inventory ?? inventory;
   farm = Array.isArray(d.farm) ? d.farm : Array(9).fill(null);
 
   marketPrice = d.marketPrice ?? crops.lettuce.basePrice;
 }
+// =====================
+// 📜 퀘스트 생성
+// =====================
+function newQuest(){
 
+  const list = [
+    {text:"💰 100골드 모으기", type:"gold", target:100, reward:20},
+    {text:"🌾 수확 3번 하기", type:"harvest", target:3, reward:30},
+    {text:"⭐ 경험치 50 얻기", type:"exp", target:50, reward:40}
+  ];
+  quest = list[Math.floor(Math.random()*list.length)];
+  quest.progress = 0;
+
+  renderQuest();
+}
+
+// =====================
+// 📜 퀘스트 진행
+// =====================
+function addProgress(type, value){
+
+  if(!quest || quest.type !== type) return;
+
+  quest.progress += value;
+
+  if(quest.progress >= quest.target){
+
+    gold += quest.reward;
+    exp += quest.reward;
+
+    quest = null;
+    save();
+  }
+
+  render();
+}
+
+// =====================
+// 🧘 무사수행
+// =====================
+function startEvent(){
+
+  const events = [
+    {
+      text:"길에서 도적을 만났다",
+      choices:[
+        {t:"싸운다", r:()=>fight()},
+        {t:"도망간다", r:()=>escape()},
+        {t:"돈을 준다", r:()=>bribe()}
+      ]
+    },
+    {
+      text:"신비한 상인을 만났다",
+      choices:[
+        {t:"거래한다", r:()=>trade()},
+        {t:"무시한다", r:()=>{}}
+      ]
+    }
+  ];
+
+  currentEvent = events[Math.floor(Math.random()*events.length)];
+
+  document.getElementById("eventText").innerText = currentEvent.text;
+
+  const c = document.getElementById("choices");
+  c.innerHTML = "";
+
+  currentEvent.choices.forEach(ch=>{
+    const b = document.createElement("button");
+    b.className = "choiceBtn";
+    b.innerText = ch.t;
+    b.onclick = ()=>{
+      ch.r();
+      save();
+      render();
+    };
+    c.appendChild(b);
+  });
+}
+  
 // =====================
 // 🌦 날씨
 // =====================
@@ -297,6 +397,44 @@ function buySeed(){
   save();
   render();
 }
+  
+// =====================
+// ⚔️ 결과
+// =====================
+
+function fight(){
+
+  
+  if(Math.random() > 0.5){
+    gold += 50;
+    exp += 20;
+  } else {
+    gold = Math.max(0, gold - 20);
+  }
+  
+  addProgress("exp", 20);
+}
+
+function escape(){
+  exp += 10;
+
+ addProgress("exp", 10);
+}
+
+function bribe(){
+  gold -= 30;
+  exp += 5;
+ addProgress("gold", 30);
+}
+
+function trade(){
+
+  gold += 100;
+  exp += 30;
+
+  render();
+  addProgress("gold", 100);
+}
 
 // =====================
 // 🧹 초기화
@@ -316,13 +454,17 @@ function resetGame(){
   farm = Array(9).fill(null);
   marketPrice = 10;
 
-  render();
-}
+
 
 // =====================
 // 🔄 렌더
 // =====================
 function render(){
+  if(exp >= maxExp){
+    exp -= maxExp;
+    level++;
+    maxExp += 20;
+  }
 
   document.getElementById("gold").innerText = gold;
   document.getElementById("level").innerText = level;
@@ -333,8 +475,27 @@ function render(){
   renderFarm();
   renderInventory();
   renderShop();
+  renderQuest();
 }
+  
+// =====================
+// 📜 퀘스트 렌더
+// =====================
+function renderQuest(){
 
+  const q = document.getElementById("quest");
+
+  if(!quest){
+    q.innerHTML = "없음";
+    return;
+  }
+
+  q.innerHTML = `
+    ${quest.text}<br>
+    진행: ${quest.progress}/${quest.target}
+  `;
+}
+  
 // =====================
 // 🚀 시작
 // =====================
