@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>DreamFarm v1.1.1 Stable</title>
+<title>DreamFarm v1.2</title>
 
 <style>
 body { font-family: Arial; background:#f2f7f2; text-align:center; }
@@ -11,7 +11,7 @@ body { font-family: Arial; background:#f2f7f2; text-align:center; }
   background:white;
   padding:15px;
   margin:10px auto;
-  width:500px;
+  width:520px;
   border-radius:10px;
 }
 
@@ -39,13 +39,15 @@ button { padding:6px; margin:3px; cursor:pointer; }
 
 <body>
 
-<h1>🌱 DreamFarm v1.1.1</h1>
+<h1>🌱 DreamFarm v1.2</h1>
 
 <div class="box">
 💰 골드: <span id="gold">0</span><br>
 ⭐ 레벨: <span id="level">1</span><br>
 📊 EXP: <span id="exp">0</span>/<span id="maxExp">100</span><br>
-🌦 날씨: <span id="weather">☀️</span>
+🧑‍🌾 농부레벨: <span id="farmerLv">1</span><br>
+🌦 날씨: <span id="weather">☀️</span><br>
+📈 시장: <span id="market">-</span>
 </div>
 
 <div class="box">
@@ -78,8 +80,9 @@ let gold = 50;
 let level = 1;
 let exp = 0;
 let maxExp = 100;
+let farmerLv = 1;
 
-let seed = { lettuce: 3 };
+let seed = { lettuce: 5 };
 let inventory = { lettuce: 0 };
 let farm = Array(9).fill(null);
 
@@ -87,7 +90,7 @@ let farm = Array(9).fill(null);
 // 🌾 작물
 // =====================
 const crops = {
-  lettuce: {seed: 5, price: 10, time: 3000}
+  lettuce: {seed: 5, basePrice: 10, time: 3000}
 };
 
 // =====================
@@ -96,7 +99,9 @@ const crops = {
 function save(){
   localStorage.setItem("dreamfarm", JSON.stringify({
     gold, level, exp, maxExp,
-    seed, inventory, farm
+    farmerLv,
+    seed, inventory, farm,
+    marketPrice
   }));
 }
 
@@ -104,17 +109,72 @@ function save(){
 // 📥 로드
 // =====================
 function load(){
-  const data = JSON.parse(localStorage.getItem("dreamfarm") || "null");
+  const d = JSON.parse(localStorage.getItem("dreamfarm") || "null");
+  if(!d) return;
 
-  if(data){
-    gold = data.gold ?? gold;
-    level = data.level ?? level;
-    exp = data.exp ?? exp;
-    maxExp = data.maxExp ?? maxExp;
-    seed = data.seed ?? seed;
-    inventory = data.inventory ?? inventory;
-    farm = Array.isArray(data.farm) ? data.farm : Array(9).fill(null);
+  gold = d.gold ?? gold;
+  level = d.level ?? level;
+  exp = d.exp ?? exp;
+  maxExp = d.maxExp ?? maxExp;
+  farmerLv = d.farmerLv ?? farmerLv;
+
+  seed = d.seed ?? seed;
+  inventory = d.inventory ?? inventory;
+  farm = Array.isArray(d.farm) ? d.farm : Array(9).fill(null);
+
+  marketPrice = d.marketPrice ?? crops.lettuce.basePrice;
+}
+
+// =====================
+// 🌦 날씨
+// =====================
+let weather = "☀️";
+let weatherRate = 1;
+
+function weatherSystem(){
+  const r = Math.random();
+
+  if(r < 0.33){
+    weather = "☀️";
+    weatherRate = 1;
   }
+  else if(r < 0.66){
+    weather = "🌧";
+    weatherRate = 0.7;
+  }
+  else{
+    weather = "🔥";
+    weatherRate = 1.2;
+  }
+
+  document.getElementById("weather").innerText = weather;
+}
+
+// =====================
+// 📈 시장 가격
+// =====================
+let marketPrice = 10;
+
+function marketSystem(){
+  const change = Math.floor(Math.random()*5 - 2);
+  marketPrice = Math.max(3, crops.lettuce.basePrice + change);
+
+  document.getElementById("market").innerText =
+    "상추 " + marketPrice + "G";
+}
+
+// =====================
+// 🐛 해충
+// =====================
+function pest(){
+  const chance = Math.random() - (farmerLv * 0.02);
+
+  if(chance < 0.08){
+    const i = Math.floor(Math.random()*farm.length);
+    if(farm[i]) farm[i] = null;
+  }
+
+  renderFarm();
 }
 
 // =====================
@@ -129,16 +189,15 @@ function plant(i){
 
   farm[i] = {stage:"grow"};
 
-  save();
-
   setTimeout(()=>{
     if(farm[i]){
       farm[i].stage = "ready";
       renderFarm();
     }
-  }, 3000);
+  }, crops.lettuce.time * weatherRate);
 
-  renderFarm();
+  save();
+  render();
 }
 
 // =====================
@@ -155,6 +214,7 @@ function harvest(i){
   if(exp >= maxExp){
     exp -= maxExp;
     level++;
+    farmerLv++;
     maxExp += 20;
   }
 
@@ -167,7 +227,7 @@ function harvest(i){
 // =====================
 function sell(){
 
-  gold += inventory.lettuce * crops.lettuce.price;
+  gold += inventory.lettuce * marketPrice;
   inventory.lettuce = 0;
 
   exp += 20;
@@ -181,8 +241,8 @@ function sell(){
 // =====================
 function renderFarm(){
 
-  const farmDiv = document.getElementById("farm");
-  farmDiv.innerHTML = "";
+  const f = document.getElementById("farm");
+  f.innerHTML = "";
 
   farm.forEach((p,i)=>{
 
@@ -202,7 +262,7 @@ function renderFarm(){
       d.onclick = ()=>harvest(i);
     }
 
-    farmDiv.appendChild(d);
+    f.appendChild(d);
   });
 }
 
@@ -221,41 +281,21 @@ function renderShop(){
   const s = document.getElementById("shop");
   s.innerHTML = "";
 
-  for(let k in crops){
-    let opt = document.createElement("option");
-    opt.value = k;
-    opt.innerText = `${k} (${crops[k].seed}G)`;
-    s.appendChild(opt);
-  }
+  let opt = document.createElement("option");
+  opt.value = "lettuce";
+  opt.innerText = "상추 씨앗 (5G)";
+  s.appendChild(opt);
 }
 
 function buySeed(){
 
-  const type = document.getElementById("shop").value;
+  if(gold < 5) return;
 
-  if(gold < crops[type].seed) return;
-
-  gold -= crops[type].seed;
-  seed[type]++;
+  gold -= 5;
+  seed.lettuce++;
 
   save();
   render();
-}
-
-// =====================
-// 🌦 날씨
-// =====================
-let weather = "☀️";
-
-function weatherSystem(){
-
-  const r = Math.random();
-
-  if(r < 0.33) weather = "☀️";
-  else if(r < 0.66) weather = "🌧";
-  else weather = "🔥";
-
-  document.getElementById("weather").innerText = weather;
 }
 
 // =====================
@@ -269,10 +309,12 @@ function resetGame(){
   level = 1;
   exp = 0;
   maxExp = 100;
+  farmerLv = 1;
 
-  seed = {lettuce:3};
+  seed = {lettuce:5};
   inventory = {lettuce:0};
   farm = Array(9).fill(null);
+  marketPrice = 10;
 
   render();
 }
@@ -286,6 +328,7 @@ function render(){
   document.getElementById("level").innerText = level;
   document.getElementById("exp").innerText = exp;
   document.getElementById("maxExp").innerText = maxExp;
+  document.getElementById("farmerLv").innerText = farmerLv;
 
   renderFarm();
   renderInventory();
@@ -298,10 +341,11 @@ function render(){
 load();
 render();
 weatherSystem();
+marketSystem();
 
-// ⏱ 자동저장 + 날씨 유지
-setInterval(save, 3000);
 setInterval(weatherSystem, 15000);
+setInterval(pest, 20000);
+setInterval(marketSystem, 10000);
 
 </script>
 
