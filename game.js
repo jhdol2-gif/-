@@ -172,6 +172,7 @@ function harvest(i){
     state.level++;
   }
 
+  state.selectedCrop = "lettuce";
   saveGame();
   render();
 }
