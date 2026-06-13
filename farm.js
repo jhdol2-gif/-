@@ -1,5 +1,4 @@
 function renderFarm() {
-function renderFarm() {
   const farmDiv = document.getElementById("farm");
   farmDiv.innerHTML = "";
 
