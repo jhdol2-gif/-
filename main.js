@@ -10,4 +10,6 @@ function renderAll() {
   renderStorage();
 }
 
+startPestSystem();
+
 renderAll();
