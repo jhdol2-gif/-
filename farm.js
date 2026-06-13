@@ -1,4 +1,5 @@
 function renderFarm() {
+function renderFarm() {
   const farmDiv = document.getElementById("farm");
   farmDiv.innerHTML = "";
 
@@ -9,7 +10,12 @@ function renderFarm() {
     if (!plot) {
       d.innerText = "빈 땅";
       d.onclick = () => openPlantMenu(i);
-    } else {
+
+    } else if (plot.pest) {
+      d.innerText = `${plot.name}\n🐛 해충 피해`;
+      d.onclick = () => harvest(i);
+
+    } else if (!plot.ready) {
       d.innerText = `${plot.name}\n🌱 성장중`;
 
       setTimeout(() => {
@@ -21,6 +27,10 @@ function renderFarm() {
         d.innerText = `${plot.name}\n✅ 수확 가능`;
         d.onclick = () => harvest(i);
       }
+
+    } else {
+      d.innerText = `${plot.name}\n✅ 수확 가능`;
+      d.onclick = () => harvest(i);
     }
 
     farmDiv.appendChild(d);
