@@ -5,11 +5,16 @@ function renderGold() {
 
 function renderAll() {
   renderGold();
-  renderShop();
-  renderFarm();
-  renderStorage();
+
+  if (typeof renderShop === "function") renderShop();
+  if (typeof renderFarm === "function") renderFarm();
+  if (typeof renderStorage === "function") renderStorage();
 }
 
-startPestSystem();
+window.onload = () => {
+  renderAll();
 
-renderAll();
+  if (typeof startPestSystem === "function") {
+    startPestSystem();
+  }
+};
