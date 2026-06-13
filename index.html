@@ -1,4 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>DreamFarm Modular</title>
+
+<style>
+body { font-family: Arial; background:#f2f7f2; text-align:center; }
+
+.box {
+  background:white;
+  padding:15px;
+  margin:10px auto;
+  width:520px;
+  border-radius:10px;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:10px;
+}
+
+.plot {
+  background:#dfeedd;
+  height:80px;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+
+.ready { background:#ffeaa7; }
+button { padding:6px; margin:3px; }
+</style>
+</head>
+
+<body>
+
+<h1>🌱 DreamFarm Modular</h1>
+
+<div class="box">
+💰 골드: <span id="gold"></span><br>
+⭐ 레벨: <span id="level"></span><br>
+📊 EXP: <span id="exp"></span>/<span id="maxExp"></span><br>
+🌦 날씨: <span id="weather"></span><br>
+📈 시장: <span id="market"></span>
+</div>
+
+<div class="box">
+<h3>🏪 상점</h3>
+<button onclick="buySeed()">씨앗 구매</button>
+</div>
+
+<div class="box">
+<h3>🌱 농장</h3>
+<div class="grid" id="farm"></div>
+</div>
+
+<div class="box">
+<h3>📦 창고</h3>
+<div id="inventory"></div>
+<button onclick="sell()">판매</button>
+</div>
+
 <script src="save.js"></script>
 <script src="farm.js"></script>
 <script src="system.js"></script>
 <script src="game.js"></script>
+
+</body>
+</html>
