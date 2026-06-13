@@ -1,0 +1,27 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+#shop, #farm, #storage {
+  margin: 20px auto;
+  max-width: 900px;
+}
+
+#farm {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.plot {
+  width: 120px;
+  height: 120px;
+  border: 1px solid #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  white-space: pre-line;
+}
